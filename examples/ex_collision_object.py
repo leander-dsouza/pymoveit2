@@ -47,10 +47,8 @@ def main(args=None):
     filename = node.get_parameter("object_mesh_file").get_parameter_value().string_value
 
     moveit2.add_collision_mesh(
-        filename=filename,
-        id=filename,
-        position=[0,0,0],
-        quat_xyzw=[0,0,0,0])
+        filename=filename, id=filename, position=[0, 0, 0], quat_xyzw=[0, 0, 0, 0]
+    )
 
     # moveit2.remove_collision_mesh(id=filename)
 

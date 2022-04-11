@@ -4,6 +4,7 @@ Example of moving to a pose goal.
 `ros2 run pymoveit2 ex_pose_goal.py --ros-args -p position:="[0.25, 0.0, 1.0]" -p quat_xyzw:="[0.0, 0.0, 0.0, 1.0]"`
 """
 
+from math import degrees, radians
 from threading import Thread
 
 import rclpy
@@ -11,7 +12,7 @@ from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.node import Node
 
 from pymoveit2 import MoveIt2
-from pymoveit2.robots import panda
+from pymoveit2.robots import ur10
 
 
 def main(args=None):
@@ -31,10 +32,10 @@ def main(args=None):
     # Create MoveIt 2 interface
     moveit2 = MoveIt2(
         node=node,
-        joint_names=panda.joint_names(),
-        base_link_name=panda.base_link_name(),
-        end_effector_name=panda.end_effector_name(),
-        group_name=panda.MOVE_GROUP_ARM,
+        joint_names=ur10.joint_names(),
+        base_link_name=ur10.base_link_name(),
+        end_effector_name=ur10.end_effector_name(),
+        group_name=ur10.MOVE_GROUP_ARM,
         callback_group=callback_group,
     )
 
@@ -52,7 +53,42 @@ def main(args=None):
     node.get_logger().info(
         f"Moving to {{position: {list(position)}, quat_xyzw: {list(quat_xyzw)}}}"
     )
-    moveit2.move_to_pose(position=position, quat_xyzw=quat_xyzw, cartesian=False)
+
+    moveit2.move_to_pose(
+        position=position,
+        quat_xyzw=quat_xyzw,
+        path_joint_constraints=[
+            (ur10.joint_names()[1], radians(-90), radians(-45), radians(45)),
+            (ur10.joint_names()[2], radians(0), radians(-1), radians(170)),
+            (ur10.joint_names()[3], radians(-90), radians(-90), radians(90)),
+        ],
+    )
+    moveit2.wait_until_executed()
+    position[2] -= 0.1
+    print("--" * 5)
+    moveit2.move_to_pose(
+        position=position,
+        quat_xyzw=quat_xyzw,
+        path_joint_constraints=[
+            (ur10.joint_names()[1], radians(-90), radians(-45), radians(45)),
+            (ur10.joint_names()[2], radians(0), radians(-1), radians(170)),
+            (ur10.joint_names()[3], radians(-90), radians(-90), radians(90)),
+        ],
+        cartesian=True,
+    )
+    position[1] -= 0.3
+    moveit2.wait_until_executed()
+    print("--" * 5)
+    moveit2.move_to_pose(
+        position=position,
+        quat_xyzw=quat_xyzw,
+        path_joint_constraints=[
+            (ur10.joint_names()[1], radians(-90), radians(-45), radians(45)),
+            (ur10.joint_names()[2], radians(0), radians(-1), radians(170)),
+            (ur10.joint_names()[3], radians(-90), radians(-90), radians(90)),
+        ],
+        cartesian=True,
+    )
     moveit2.wait_until_executed()
 
     rclpy.shutdown()

@@ -233,7 +233,7 @@ class MoveIt2:
         tolerance_orientation: float = 0.001,
         weight_position: float = 1.0,
         cartesian: bool = False,
-        path_joint_constraints=List[Tuple[str, float, float, float]],
+        path_joint_constraints: List[Tuple[str, float, float, float]] = [],
         weight_orientation: float = 1.0,
     ):
         """
@@ -292,7 +292,7 @@ class MoveIt2:
         joint_names: Optional[List[str]] = None,
         tolerance: float = 0.001,
         cartesian: bool = False,
-        path_joint_constraints=List[Tuple[str, float, float, float]],
+        path_joint_constraints: List[Tuple[str, float, float, float]] = [],
         weight: float = 1.0,
     ):
         """
@@ -685,7 +685,7 @@ class MoveIt2:
         Clear all goal constraints that were previously set.
         Note that this function is called automatically after each `plan_kinematic_path()`.
         """
-        self.__move_action_goal.request.orientation_constraints.joint_constraints.clear()
+        self.__move_action_goal.request.path_constraints.orientation_constraints.clear()
         self.__move_action_goal.request.path_constraints.joint_constraints.clear()
         self.__move_action_goal.request.goal_constraints = [Constraints()]
 
