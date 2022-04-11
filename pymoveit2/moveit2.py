@@ -233,6 +233,7 @@ class MoveIt2:
         tolerance_orientation: float = 0.001,
         weight_position: float = 1.0,
         cartesian: bool = False,
+        path_joint_constraints=List[Tuple[str, float, float, float]],
         weight_orientation: float = 1.0,
     ):
         """
@@ -280,6 +281,7 @@ class MoveIt2:
                     tolerance_orientation=tolerance_orientation,
                     weight_position=weight_position,
                     weight_orientation=weight_orientation,
+                    path_joint_constraints=path_joint_constraints,
                     cartesian=cartesian,
                 )
             )
@@ -290,6 +292,7 @@ class MoveIt2:
         joint_names: Optional[List[str]] = None,
         tolerance: float = 0.001,
         cartesian: bool = False,
+        path_joint_constraints=List[Tuple[str, float, float, float]],
         weight: float = 1.0,
     ):
         """
@@ -330,6 +333,7 @@ class MoveIt2:
                     joint_names=joint_names,
                     tolerance_joint_position=tolerance,
                     weight_joint_position=weight,
+                    path_joint_constraints=path_joint_constraints,
                     cartesian=cartesian,
                 )
             )
@@ -350,6 +354,7 @@ class MoveIt2:
         weight_orientation: float = 1.0,
         weight_joint_position: float = 1.0,
         start_joint_state: Optional[Union[JointState, List[float]]] = None,
+        path_joint_constraints=List[Tuple[str, float, float, float]],
         cartesian: bool = False,
     ) -> Optional[JointTrajectory]:
         """
@@ -399,6 +404,17 @@ class MoveIt2:
                 )
         elif self.joint_state is not None:
             self.__move_action_goal.request.start_state.joint_state = self.joint_state
+
+        for jn, jp, t_min, t_max in path_joint_constraints:
+            self.__move_action_goal.request.path_constraints.joint_constraints.append(
+                self.generate_joint_constraint(
+                    joint_name=jn,
+                    joint_position=float(jp),
+                    tolerance_below=float(-t_min),
+                    tolerance_above=float(t_max),
+                    weight=0.9,
+                )
+            )
 
         # Plan trajectory by sending a goal (blocking)
         if cartesian:
@@ -608,6 +624,31 @@ class MoveIt2:
             -1
         ].orientation_constraints.append(constraint)
 
+    def generate_joint_constraint(
+        self,
+        joint_position: float,
+        joint_name: str,
+        tolerance_above: float = 0.001,
+        tolerance_below: float = 0.001,
+        weight: float = 1.0,
+    ):
+        # Create a new constraint for each joint
+        constraint = JointConstraint()
+
+        # Define joint name
+        constraint.joint_name = joint_name
+
+        # Define the target joint position
+        constraint.position = joint_position
+
+        # Define telerances
+        constraint.tolerance_above = tolerance_above
+        constraint.tolerance_below = tolerance_below
+
+        # Set weight of the constraint
+        constraint.weight = weight
+        return constraint
+
     def set_joint_goal(
         self,
         joint_positions: List[float],
@@ -626,21 +667,13 @@ class MoveIt2:
             joint_names = self.__joint_names
 
         for i in range(len(joint_positions)):
-            # Create a new constraint for each joint
-            constraint = JointConstraint()
-
-            # Define joint name
-            constraint.joint_name = joint_names[i]
-
-            # Define the target joint position
-            constraint.position = joint_positions[i]
-
-            # Define telerances
-            constraint.tolerance_above = tolerance
-            constraint.tolerance_below = tolerance
-
-            # Set weight of the constraint
-            constraint.weight = weight
+            constraint = self.generate_joint_constraint(
+                joint_name=joint_names[i],
+                joint_position=joint_positions[i],
+                tolerance_below=tolerance,
+                tolerance_above=tolerance,
+                weight=weight,
+            )
 
             # Append to other constraints
             self.__move_action_goal.request.goal_constraints[
@@ -652,7 +685,8 @@ class MoveIt2:
         Clear all goal constraints that were previously set.
         Note that this function is called automatically after each `plan_kinematic_path()`.
         """
-
+        self.__move_action_goal.request.orientation_constraints.joint_constraints.clear()
+        self.__move_action_goal.request.path_constraints.joint_constraints.clear()
         self.__move_action_goal.request.goal_constraints = [Constraints()]
 
     def create_new_goal_constraint(self):
@@ -1266,9 +1300,7 @@ class MoveIt2:
 
         if not isinstance(position, Point):
             position = Point(
-                x=float(position[0]), 
-                y=float(position[1]), 
-                z=float(position[2])
+                x=float(position[0]), y=float(position[1]), z=float(position[2])
             )
         if not isinstance(quat_xyzw, Quaternion):
             quat_xyzw = Quaternion(
