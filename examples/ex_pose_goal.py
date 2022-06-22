@@ -12,7 +12,7 @@ from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.node import Node
 
 from pymoveit2 import MoveIt2
-from pymoveit2.robots import ur10
+from pymoveit2.robots import ur5e
 
 
 def main(args=None):
@@ -32,10 +32,10 @@ def main(args=None):
     # Create MoveIt 2 interface
     moveit2 = MoveIt2(
         node=node,
-        joint_names=ur10.joint_names(),
-        base_link_name=ur10.base_link_name(),
-        end_effector_name=ur10.end_effector_name(),
-        group_name=ur10.MOVE_GROUP_ARM,
+        joint_names=ur5e.joint_names(),
+        base_link_name=ur5e.base_link_name(),
+        end_effector_name=ur5e.end_effector_name(),
+        group_name=ur5e.MOVE_GROUP_ARM,
         callback_group=callback_group,
     )
 
@@ -58,9 +58,9 @@ def main(args=None):
         position=position,
         quat_xyzw=quat_xyzw,
         path_joint_constraints=[
-            (ur10.joint_names()[1], radians(-90), radians(-45), radians(45)),
-            (ur10.joint_names()[2], radians(0), radians(-1), radians(170)),
-            (ur10.joint_names()[3], radians(-90), radians(-90), radians(90)),
+            (ur5e.joint_names()[1], radians(-90), radians(-45), radians(45)),
+            (ur5e.joint_names()[2], radians(0), radians(-1), radians(170)),
+            (ur5e.joint_names()[3], radians(-90), radians(-90), radians(90)),
         ],
     )
     moveit2.wait_until_executed()
@@ -70,9 +70,9 @@ def main(args=None):
         position=position,
         quat_xyzw=quat_xyzw,
         path_joint_constraints=[
-            (ur10.joint_names()[1], radians(-90), radians(-45), radians(45)),
-            (ur10.joint_names()[2], radians(0), radians(-1), radians(170)),
-            (ur10.joint_names()[3], radians(-90), radians(-90), radians(90)),
+            (ur5e.joint_names()[1], radians(-90), radians(-45), radians(45)),
+            (ur5e.joint_names()[2], radians(0), radians(-1), radians(170)),
+            (ur5e.joint_names()[3], radians(-90), radians(-90), radians(90)),
         ],
         cartesian=True,
     )
@@ -83,9 +83,9 @@ def main(args=None):
         position=position,
         quat_xyzw=quat_xyzw,
         path_joint_constraints=[
-            (ur10.joint_names()[1], radians(-90), radians(-45), radians(45)),
-            (ur10.joint_names()[2], radians(0), radians(-1), radians(170)),
-            (ur10.joint_names()[3], radians(-90), radians(-90), radians(90)),
+            (ur5e.joint_names()[1], radians(-90), radians(-45), radians(45)),
+            (ur5e.joint_names()[2], radians(0), radians(-1), radians(170)),
+            (ur5e.joint_names()[3], radians(-90), radians(-90), radians(90)),
         ],
         cartesian=True,
     )
